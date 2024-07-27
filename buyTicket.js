@@ -1,18 +1,17 @@
 import puppeteer from 'puppeteer';
+import dotenv from 'dotenv';
 // Or import puppeteer from 'puppeteer-core';
 
 // Helper function to introduce a delay
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
-
+dotenv.config();
 (async () => {
 	// Launch the browser and open a new blank page
 	const browser = await puppeteer.launch();
 	const page = await browser.newPage();
-
+	const eventId = process.env.EVENT_ID;
 	// Navigate the page to a URL.
-	await page.goto(
-		'https://eventpro-ticketing-frontend.vercel.app/events/669617a3ad8675ad98ee16f9'
-	);
+	await page.goto(process.env.PAGE_URL);
 	console.log('Page loaded');
 
 	// Set screen size.
@@ -22,27 +21,18 @@ const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
 	await Promise.all([
 		page.waitForResponse(
 			response =>
-				response
-					.url()
-					.includes(
-						'https://event-pro-backend-f38a47a2f6f3.herokuapp.com/user-api/events/669617a3ad8675ad98ee16f9'
-					) && response.status() === 200
+				response.url().includes(process.env.SINGLE_EVENT_PAGE_BACKEND_URL) &&
+				response.status() === 200
 		),
 		page.waitForResponse(
 			response =>
-				response
-					.url()
-					.includes(
-						'https://event-pro-backend-f38a47a2f6f3.herokuapp.com/user-api/tickets/markup'
-					) && response.status() === 200
+				response.url().includes(process.env.MARKUP_BACKEND_URL) &&
+				response.status() === 200
 		),
 		page.waitForResponse(
 			response =>
-				response
-					.url()
-					.includes(
-						'https://event-pro-backend-f38a47a2f6f3.herokuapp.com/user-api/tickets/by-event/669617a3ad8675ad98ee16f9'
-					) && response.status() === 200
+				response.url().includes(process.env.GET_TICKETS_BY_EVENT_ID_URL) &&
+				response.status() === 200
 		),
 	]);
 	console.log('All specified responses received');
@@ -53,14 +43,16 @@ const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
 		.click();
 	console.log('Clicked on get ticket button');
 
-	// Click on + button 7 times
-	for (let i = 0; i < 7; i++) {
+	// Click on + button 2 times
+	for (let i = 0; i < 2; i++) {
 		await page.locator('.chakra-button.css-132z0o2').click();
 	}
 	console.log('Clicked on + button 7 times');
 
 	// Click on the checkout button
-	await page.locator('[class="chakra-button css-g4ldxk"][name="checkout"]').click();
+	await page
+		.locator('[class="chakra-button css-g4ldxk"][name="checkout"]')
+		.click();
 	console.log('Clicked on checkout button');
 
 	// Wait for a specified period (e.g., 2 seconds)
@@ -85,13 +77,13 @@ const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
 	// Fill in the form
 	await page
 		.locator('[class="chakra-input css-ht8eu"][name="name"]')
-		.fill('Aminul');
+		.fill(process.env.NAME);
 	await page
 		.locator('[class="chakra-input css-ht8eu"][name="email"]')
-		.fill('mdaminul.career@gmail.com');
+		.fill(process.env.EMAIL);
 	await page
 		.locator('[class="chakra-input css-ht8eu"][name="phone"]')
-		.fill('01745896587');
+		.fill(process.env.PHONE);
 	console.log('Filled in the form');
 
 	// Click on the continue button
@@ -110,11 +102,8 @@ const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
 	try {
 		await page.waitForResponse(
 			response =>
-				response
-					.url()
-					.includes(
-						'https://event-pro-backend-f38a47a2f6f3.herokuapp.com/user-api/orders/guest'
-					) && response.status() === 200
+				response.url().includes(`${process.env.GEUEST_ORDER_URL}`) &&
+				response.status() === 200
 		);
 		console.log('Payment method response received');
 	} catch (error) {
